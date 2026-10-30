@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Student {
+  id          String       @id @default(uuid())
+  fullName    String
+  phone       String
+  packages    Package[]
+  attendances Attendance[]
+}
+
+model Package {
+  id               String       @id @default(uuid())
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id])
+  totalCredits     Int          @default(10)
+  remainingCredits Int          @default(10)
+  expiresAt        DateTime
+  isActive         Boolean      @default(true)
+  attendances      Attendance[]
+}
+
+model Session {
+  id           String       @id @default(uuid())
+  date         DateTime
+  timeSlot     String
+  capacity     Int          @default(12)
+  instructorId String
+  attendances  Attendance[]
+}
+
+enum AttendanceStatus {
+  ATTENDED
+  REVERTED
+}
+
+model Attendance {
+  id           String           @id @default(uuid())
+  sessionId    String
+  studentId    String
+  packageId    String
+  instructorId String
+  status       AttendanceStatus @default(ATTENDED)
+  createdAt    DateTime         @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+  package Package @relation(fields: [packageId], references: [id])
+}
