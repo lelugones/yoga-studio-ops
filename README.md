@@ -20,6 +20,7 @@ El desarrollo en este repositorio sigue reglas estrictas de especificación prev
 1. **Memoria Operativa y Reglas de Agente (`PROJECT_RULES.md`):** Restricciones de arquitectura, políticas de transacción y alcance negativo (*anti-scope*).
 2. **Especificaciones de Features (`/specs`):** Ninguna funcionalidad se programa sin un documento de especificación aprobado que defina contexto, diseño técnico y Criterios de Aceptación (AC) verificables.
    - Ver: [`specs/001-checkin-attendance-debit.md`](specs/001-checkin-attendance-debit.md)
+   - Ver: [`specs/002-waitlist-auto-promotion.md`](specs/002-waitlist-auto-promotion.md)
 3. **Guía de Estilo y Marca (`/skills/brand-guidelines`):** Reglas de diseño UI, paleta cromática Tailwind CSS y tono de comunicación para interfaces y agentes generativos.
 
 ---
