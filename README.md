@@ -30,7 +30,8 @@ El desarrollo en este repositorio sigue reglas estrictas de especificación prev
 ```text
 yoga-studio-ops/
 ├── specs/
-│   └── 001-checkin-attendance-debit.md   # Especificación funcional y AC
+│   ├── 001-checkin-attendance-debit.md   # Especificación funcional y AC
+│   └── 002-waitlist-auto-promotion.md    # Especificación funcional y AC
 ├── skills/
 │   └── brand-guidelines/
 │       └── SKILL.md                      # Identidad visual, paleta y UI specs
