@@ -1,4 +1,5 @@
 import { PrismaClient, AttendanceStatus } from '@prisma/client';
+import { countOccupancy, lockSession } from './session-occupancy';
 
 const prisma = new PrismaClient();
 
@@ -29,6 +30,18 @@ export class AttendanceService {
         throw new Error(
           `Cupo completo (${session.capacity}/${session.capacity}). Solo disponible registro en Lista de Espera`
         );
+      }
+
+      // Walk-in: no puede ocupar un cupo reservado por una oferta de lista de espera (SPEC-002 AC-10).
+      // Se bloquea la sesión para serializar contra confirmaciones concurrentes.
+      if (isWalkIn) {
+        const lockedSession = await lockSession(tx, sessionId);
+        const { occupied } = await countOccupancy(tx, sessionId);
+        if (occupied >= lockedSession.capacity) {
+          throw new Error(
+            `Cupo completo (${lockedSession.capacity}/${lockedSession.capacity}). Solo disponible registro en Lista de Espera`
+          );
+        }
       }
 
       // 2. Buscar paquete activo con saldo y vigencia (AC-2)

@@ -13,6 +13,9 @@ model Student {
   phone       String
   packages    Package[]
   attendances Attendance[]
+
+  reservations    Reservation[]
+  waitlistEntries WaitlistEntry[]
 }
 
 model Package {
@@ -27,12 +30,18 @@ model Package {
 }
 
 model Session {
-  id           String       @id @default(uuid())
-  date         DateTime
-  timeSlot     String
-  capacity     Int          @default(12)
-  instructorId String
-  attendances  Attendance[]
+  id              String       @id @default(uuid())
+  date            DateTime
+  timeSlot        String
+  name            String       @default("Clase de Yoga")
+  startsAt        DateTime
+  durationMinutes Int          @default(75)
+  capacity        Int          @default(12)
+  instructorId    String
+  attendances     Attendance[]
+
+  reservations Reservation[]
+  waitlist     WaitlistEntry[]
 }
 
 enum AttendanceStatus {
@@ -52,4 +61,82 @@ model Attendance {
   session Session @relation(fields: [sessionId], references: [id])
   student Student @relation(fields: [studentId], references: [id])
   package Package @relation(fields: [packageId], references: [id])
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum ReservationSource {
+  BOOKING
+  WAITLIST
+}
+
+model Reservation {
+  id          String            @id @default(uuid())
+  sessionId   String
+  studentId   String
+  status      ReservationStatus @default(CONFIRMED)
+  source      ReservationSource @default(BOOKING)
+  createdAt   DateTime          @default(now())
+  cancelledAt DateTime?
+
+  session Session @relation(fields: [sessionId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@index([sessionId, status])
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  PROMOTED
+  EXPIRED
+  DECLINED
+  CANCELLED
+}
+
+enum WaitlistActor {
+  STUDENT
+  INSTRUCTOR
+  SYSTEM
+}
+
+model WaitlistEntry {
+  id               String         @id @default(uuid())
+  sessionId        String
+  studentId        String
+  status           WaitlistStatus @default(WAITING)
+  position         Int
+  offeredAt        DateTime?
+  offerExpiresAt   DateTime?
+  resolvedAt       DateTime?
+  resolutionReason String?
+  createdAt        DateTime       @default(now())
+
+  session Session         @relation(fields: [sessionId], references: [id])
+  student Student         @relation(fields: [studentId], references: [id])
+  events  WaitlistEvent[]
+
+  @@unique([sessionId, position])
+  @@index([sessionId, status])
+  @@index([status, offerExpiresAt])
+}
+
+// Log inmutable: solo se insertan filas, nunca se actualizan ni se borran (SPEC-002 AC-11).
+model WaitlistEvent {
+  id         String          @id @default(uuid())
+  entryId    String
+  sessionId  String
+  studentId  String
+  fromStatus WaitlistStatus?
+  toStatus   WaitlistStatus
+  actor      WaitlistActor
+  reason     String?
+  createdAt  DateTime        @default(now())
+
+  entry WaitlistEntry @relation(fields: [entryId], references: [id])
+
+  @@index([sessionId, createdAt])
 }

@@ -180,4 +180,90 @@ export const CheckInView: React.FC<CheckInViewProps> = ({
             const secondsLeft = student.attendedAt
               ? Math.max(0, 60 - Math.floor((currentTime - student.attendedAt) / 1000))
               : 0;
-            const canUndo = isAttended && secondsLeft >
+            const canUndo = isAttended && secondsLeft > 0;
+            const isLowBalance = student.remainingCredits > 0 && student.remainingCredits <= 2;
+            const isLoading = loadingId === student.id;
+
+            return (
+              <article
+                key={student.id}
+                className={`rounded-2xl border bg-white p-4 shadow-[0_4px_20px_-4px_rgba(42,52,48,0.06)] ${
+                  isAttended ? 'border-[#D3E5DB]' : 'border-[#EBE6DD]'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-base font-semibold text-[#2A3430]">
+                      {student.fullName}
+                    </h2>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      {isBlocked ? (
+                        <span className="rounded-full bg-[#FBEBEB] px-2 py-0.5 font-semibold text-[#A34343]">
+                          {isExpired ? 'VENCIDO' : 'CRÉDITO AGOTADO'}
+                        </span>
+                      ) : (
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-semibold ${
+                            isLowBalance
+                              ? 'bg-[#FDF2EC] text-[#C26D43]'
+                              : 'bg-[#F3F0E9] text-[#6B7570]'
+                          }`}
+                        >
+                          {student.remainingCredits}{' '}
+                          {student.remainingCredits === 1 ? 'clase' : 'clases'}
+                        </span>
+                      )}
+                      {isLowBalance && (
+                        <span className="flex items-center gap-1 font-medium text-[#C26D43]">
+                          <Sparkles className="h-3 w-3" />
+                          Últimas clases / Renovar
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {isAttended ? (
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="flex items-center gap-1 rounded-full bg-[#EAF3EE] px-2.5 py-1 text-xs font-semibold text-[#3D6B52]">
+                        <Check className="h-3.5 w-3.5" />
+                        Presente
+                      </span>
+                      {canUndo && (
+                        <button
+                          type="button"
+                          onClick={() => handleUndo(student)}
+                          disabled={isLoading}
+                          className="flex h-11 items-center gap-1.5 rounded-xl border border-[#EBE6DD] px-3 text-xs font-medium text-[#6B7570] hover:bg-[#FBF9F5] disabled:opacity-50"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Deshacer ({secondsLeft}s)
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleAttendance(student)}
+                      disabled={isLoading || isBlocked}
+                      className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[#3D5A50] px-4 text-sm font-medium text-white hover:bg-[#324B42] disabled:cursor-not-allowed disabled:bg-[#EBE6DD] disabled:text-[#6B7570]"
+                    >
+                      {isLoading ? 'Registrando…' : 'Marcar Asistencia'}
+                      {!isLoading && !isBlocked && <ChevronRight className="h-4 w-4" />}
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {isClassFull && (
+          <p className="flex items-center justify-center gap-1.5 pt-2 text-xs font-medium text-[#A34343]">
+            <UserPlus className="h-3.5 w-3.5" />
+            Cupo completo ({MAX_CAPACITY}/{MAX_CAPACITY}). Solo disponible registro en Lista de Espera
+          </p>
+        )}
+      </main>
+    </div>
+  );
+};
